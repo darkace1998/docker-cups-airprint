@@ -16,11 +16,6 @@ CUPS_ACCESS_LOGLEVEL=${CUPS_ACCESS_LOGLEVEL:-"config"}
 CUPS_LOGLEVEL=${CUPS_LOGLEVEL:-"warn"}
 CUPS_SSL_CERT=${CUPS_SSL_CERT:-""}
 CUPS_SSL_KEY=${CUPS_SSL_KEY:-""}
-AVAHI_INTERFACES=${AVAHI_INTERFACES:=""}
-AVAHI_FRIENDLY_DESC=${AVAHI_FRIENDLY_DESC=:-"no"}
-AVAHI_IPV6=${AVAHI_IPV6:="no"}
-AVAHI_REFLECTOR=${AVAHI_REFLECTOR:="no"}
-AVAHI_REFLECT_IPV=${AVAHI_REFLECT_IPV:="no"}
 [ "yes" = "${CUPS_ENV_DEBUG}" ] && export -n
 
 ### check for valid input
@@ -61,28 +56,6 @@ cat <&0| /usr/bin/smbspool.orig $DEVICE_URI "$1" "$2" "$3" "$4" "$5"
 exit 0
 ' > /usr/bin/smbspool
 chmod +x /usr/bin/smbspool
-
-### prepare avahi-daemon configuration (dbus disabled by default)
-if [ -n "${AVAHI_INTERFACES}" ]; then
-  sed -i "s/^.*allow-interfaces=.*/allow-interfaces=${AVAHI_INTERFACES}/" /etc/avahi/avahi-daemon.conf
-fi
-sed -i "s/^.*use-ipv6=.*/use-ipv6=${AVAHI_IPV6}/" /etc/avahi/avahi-daemon.conf
-sed -i "s/^.*publish-aaaa-on-ipv4=.*/publish-aaaa-on-ipv4=${AVAHI_IPV6}/" /etc/avahi/avahi-daemon.conf
-sed -i "s/^.*enable\-reflector=.*/enable\-reflector\=${AVAHI_REFLECTOR}/" /etc/avahi/avahi-daemon.conf
-sed -i "s/^.*reflect\-ipv=.*/reflect\-ipv\=${AVAHI_REFLECT_IPV}/" /etc/avahi/avahi-daemon.conf
-sed -i 's/^.*enable-dbus=.*/enable-dbus=no/' /etc/avahi/avahi-daemon.conf
-
-# start automatic printer refresh for avahi
-/opt/airprint/printer-update.sh &
-
-# ensure avahi is running in background (but not as daemon as this implies syslog)
-(
-while (true); do
-  /usr/sbin/avahi-daemon -c || { /usr/sbin/avahi-daemon & }
-  sleep 5
-done
-) &
-sleep 1
 
 ### configure CUPS (background subshell, wait till cups http is running...)
 (
