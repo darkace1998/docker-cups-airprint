@@ -13,8 +13,6 @@ RUN apt-get -y install \
       hpijs-ppds \
       hp-ppd \
       hplip \
-      avahi-daemon \
-      libnss-mdns \
 # for mkpasswd
       whois \
       curl \
@@ -30,9 +28,6 @@ RUN apt-get -y install \
 
 # TODO: really needed?
 #COPY mime/ /etc/cups/mime/
-
-# setup airprint scripts
-COPY airprint/ /opt/airprint/
 
 COPY healthcheck.sh /
 COPY start-cups.sh /root/
